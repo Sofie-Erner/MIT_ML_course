@@ -7,28 +7,26 @@ Parameter:
 
 Output:
 - th : theta vector in d dimensions
-- th0 : scalar paremeter
+- th0 : scalar parameter
 """
 
 import numpy as np
-import random
 
 def rand_lin_class(Dn,k,d):
     thetas = {} # empty dictionary to store theta vectors and values
-    Hn = Dn # copy dataset into classifier dataset, last element in each datapoint will be changed
 
     for i in range(0,k): # loop over iterations
-        th = np.random.rand(d) # generate random dx1 vector
-        th0 = random(-100,100) # generate random scalar
+        th = np.random.uniform(-10,10,(d,)) # generate random dx1 vector
+        th0 = np.random.uniform(-10,10) # generate random scalar
 
         thetas[i] = (th,th0) # store in dictionary as tuple
 
-     # calculate training error for each iteration
-    errors = [ err_calc(Dn,thetas[i,0],thetas[i,1]) for i in range(0,k)]
+    # calculate training error for each iteration
+    errors = [ err_calc(Dn,thetas[i][0],thetas[i][1]) for i in range(0,k)]
 
-    it = np.where(errors == np.min(errors)) # find minimum error index
+    it = np.where(errors == np.min(errors))[0] # find minimum error index
 
-    return thetas[it]
+    return thetas[it[0]],np.min(errors) # currently just take first element
 
 """
 Function to calculate the error for classifier dataset Hn and training set Dn
@@ -40,16 +38,13 @@ Such that Hn[i,-1] = Dn[i,-1], only the last element will be compared
 
 def err_calc(Dn,th,th0):
     n = len(Dn) # number of datapoints
-
     H_vals = np.zeros(n) # empty list for binary classifier values
 
     for i in range(0,n):
-        val1 = np.sign( np.dot( np.transpose(th),Dn[i,-1] ) + th0) # calculate classifier
+        H_vals[i] = np.sign( np.dot( np.transpose(th),Dn[i,:-1] ) + th0) # calculate classifier
 
         # Get binary classification
-        if val1 > 0:
-            H_vals[i] = 1
-        else:
+        if H_vals[i] == 0:
             H_vals[i] = -1
     
     err1 = sum([ 1 if H_vals[i] != Dn[i,-1] else 0 for i in range(0,n) ]) # find diff between dataset
